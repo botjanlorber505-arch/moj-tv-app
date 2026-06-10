@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TV Predvajalnik s Podnapisi</title>
+    <title>Lokalni TV Predvajalnik</title>
     <style>
         body {
             background-color: #121212;
@@ -15,47 +15,35 @@
         }
         h1 { color: #00dfa2; font-size: 28px; margin-bottom: 15px; }
         .main-layout { display: flex; gap: 30px; height: 85vh; }
-        .left-panel { width: 35%; display: flex; flex-direction: column; gap: 15px; }
+        .left-panel { width: 35%; display: flex; flex-direction: column; gap: 20px; }
         
-        /* Seznam videoposnetkov */
-        .video-list { display: flex; flex-direction: column; gap: 10px; max-height: 40vh; overflow-y: auto; }
-        .video-item {
-            background-color: #222;
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 18px;
-            border: 3px solid transparent;
-            cursor: pointer;
-        }
-        .video-item.active { background-color: #00dfa2; color: black; border-color: white; }
-
-        /* Iskalnik podnapisov */
-        .subtitle-section {
+        .section {
             background-color: #1e1e1e;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
             border: 2px solid #333;
         }
-        .subtitle-section h2 { font-size: 18px; margin-top: 0; color: #00dfa2; }
-        input {
-            width: 90%;
-            padding: 10px;
-            background: #333;
-            border: 1px solid #555;
-            color: white;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
+        .section h2 { font-size: 18px; margin-top: 0; color: #00dfa2; }
+        
+        /* Skriti privzeti gumbi za datoteke in lepe nove tipke */
+        input[type="file"] { display: none; }
+        
         .btn {
+            display: inline-block;
             background-color: #00dfa2;
             color: black;
             border: none;
-            padding: 10px 15px;
+            padding: 12px 20px;
             font-weight: bold;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            margin-bottom: 10px;
+            width: 85%;
+            text-align: center;
+            font-size: 16px;
         }
+        .btn-secondary { background-color: #444; color: white; }
+        .file-status { font-size: 14px; color: #aaa; margin-bottom: 15px; }
 
         /* Predvajalnik desno */
         .right-panel { width: 65%; background: black; border-radius: 8px; position: relative; }
@@ -72,98 +60,98 @@
 </head>
 <body>
 
-    <h1>🎬 TV Predvajalnik & Podnapisi</h1>
+    <h1>🎬 Lokalni TV Predvajalnik & Podnapisi</h1>
     
     <div class="main-layout">
-        <!-- LEVI PANEL: Seznam in Podnapisi -->
+        <!-- LEVI PANEL: Nalaganje datotek -->
         <div class="left-panel">
-            <div class="video-list" id="videoList">
-                <div class="video-item active" data-url="https://googleapis.com">Film 1 (MP4)</div>
-                <div class="video-item" data-url="https://googleapis.com">Film 2 (MKV/WebM)</div>
+            
+            <!-- Izbira videa -->
+            <div class="section">
+                <h2>1. Korak: Izbira Videa</h2>
+                <label class="btn" for="videoInput">Izberi Video Datoteko</label>
+                <input type="file" id="videoInput" accept="video/*">
+                <div class="file-status" id="videoStatus">Noben video ni izbran (Podpira MP4, WebM...)</div>
             </div>
 
-            <!-- Iskanje in nalaganje podnapisov -->
-            <div class="subtitle-section">
-                <h2>Iskanje Podnapisov</h2>
-                <input type="text" id="searchQuery" placeholder="Vpiši ime filma za Podnapisi.org...">
-                <button class="btn" id="btnSearch" onclick="openPodnapisi()">Išči na Podnapisi.org</button>
-                
-                <h2 style="margin-top: 15px;">Povezava do (.VTT) podnapisa</h2>
-                <input type="text" id="subUrlInput" placeholder="Prilepi URL do .vtt datoteke spodaj...">
-                <button class="btn" onclick="loadExternalSubtitle()">Naloži podnapis</button>
+            <!-- Izbira podnapisov -->
+            <div class="section">
+                <h2>2. Korak: Izbira Podnapisov</h2>
+                <label class="btn btn-secondary" for="subInput">Izberi Podnapis (.srt ali .vtt)</label>
+                <input type="file" id="subInput" accept=".srt,.vtt">
+                <div class="file-status" id="subStatus">Noben podnapis ni izbran</div>
+            </div>
+
+            <!-- Iskanje na podnapisi.org -->
+            <div class="section">
+                <h2>Iskanje na spletu</h2>
+                <button class="btn btn-secondary" onclick="window.open('https://slo-podnapisi.net', '_blank')">Odpri Podnapisi.org</button>
             </div>
         </div>
 
         <!-- DESNI PANEL: Video predvajalnik -->
         <div class="right-panel">
-            <video id="tvPlayer" controls autoplay>
-                <source src="https://googleapis.com" type="video/mp4">
-                <track id="playerTrack" src="" kind="subtitles" srclang="sl" label="Slovenščina" default>
+            <video id="tvPlayer" controls>
+                <track id="playerTrack" kind="subtitles" srclang="sl" label="Slovenščina" default>
+                Vaš brskalnik ne podpira predvajalnika.
             </video>
         </div>
     </div>
 
     <script>
-        const items = document.querySelectorAll('.video-item');
+        const videoInput = document.getElementById('videoInput');
+        const subInput = document.getElementById('subInput');
         const player = document.getElementById('tvPlayer');
         const track = document.getElementById('playerTrack');
-        let currentIndex = 0;
+        
+        const videoStatus = document.getElementById('videoStatus');
+        const subStatus = document.getElementById('subStatus');
 
-        // 1. Podpora za več formatov: Televizor bo samodejno predvajal formate (MP4, MKV, WebM), če jih podpira strojna oprema TV-ja.
-        function changeVideo(index) {
-            items.forEach(i => i.classList.remove('active'));
-            items[index].classList.add('active');
-            
-            const url = items[index].getAttribute('data-url');
-            player.src = url;
-            player.load();
-            player.play();
-        }
-
-        // 2. Iskanje na Podnapisi.org
-        function openPodnapisi() {
-            const query = document.getElementById('searchQuery').value;
-            if(query) {
-                // Odpre iskanje neposredno na spletni strani slo-podnapisi.net v novem zavihku brskalnika
-                const searchUrl = `https://slo-podnapisi.net{encodeURIComponent(query)}`;
-                window.open(searchUrl, '_blank');
-            } else {
-                alert("Prosimo, vpišite ime filma.");
-            }
-        }
-
-        // 3. Ročno dodajanje podnapisov (Format .VTT)
-        function loadExternalSubtitle() {
-            const subUrl = document.getElementById('subUrlInput').value;
-            if (subUrl) {
-                track.src = subUrl; // Vstavi zunanji podnapis v predvajalnik
-                alert("Podnapis uspešno naložen!");
-            } else {
-                alert("Vnesite veljaven URL naslov podnapisa.");
-            }
-        }
-
-        // Upravljanje s tipkami (Gor/Dol/Enter) za Hisense daljinec
-        document.addEventListener('keydown', function(e) {
-            if (document.activeElement.tagName === 'INPUT') return; // Če tipkamo v iskalnik, onemogoči premikanje videa
-
-            if (e.key === 'ArrowUp' && currentIndex > 0) {
-                currentIndex--;
-                changeVideo(currentIndex);
-            } else if (e.key === 'ArrowDown' && currentIndex < items.length - 1) {
-                currentIndex++;
-                changeVideo(currentIndex);
-            } else if (e.key === 'Enter') {
-                if (player.requestFullscreen) player.requestFullscreen();
+        // 1. Nalaganje in predvajanje lokalnega videa
+        videoInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                videoStatus.innerText = "Izbrano: " + file.name;
+                const fileURL = URL.createObjectURL(file);
+                player.src = fileURL;
+                player.play();
             }
         });
 
-        // Klikanje z miško/kurzorjem
-        items.forEach((item, index) => {
-            item.addEventListener('click', () => {
-                currentIndex = index;
-                changeVideo(index);
-            });
+        // 2. Nalaganje podnapisov (z avtomatsko pretvorbo iz SRT v VTT)
+        subInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            
+            subStatus.innerText = "Izbrano: " + file.name;
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                let text = e.target.result;
+
+                // Če je datoteka .srt, jo pretvorimo v .vtt format, ki ga brskalnik zahteva
+                if (file.name.endsWith('.srt')) {
+                    text = "WEBVTT\n\n" + text
+                        .replace(/,/g, '.') // SRT uporablja vejice, VTT piko za milisekunde
+                        .replace(/(\d\d:\d\d:\d\d\.\d\d\d) --> (\d\d:\d\d:\d\d\.\d\d\d)/g, '$1 --> $2');
+                }
+
+                // Ustvarimo začasno povezavo do predelanega podnapisa
+                const vttBlob = new Blob([text], { type: 'text/vtt' });
+                track.src = URL.createObjectURL(vttBlob);
+                alert("Podnapis je pripravljen in naložen!");
+            };
+
+            reader.readAsText(file);
+        });
+
+        // Tipka 'Enter' na daljincu raztegne video čez cel zaslon
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && player.src) {
+                if (player.requestFullscreen) {
+                    player.requestFullscreen();
+                }
+            }
         });
     </script>
 </body>
