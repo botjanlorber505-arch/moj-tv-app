@@ -3,156 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lokalni TV Predvajalnik</title>
+    <title>Moj TV Raziskovalec</title>
     <style>
-        body {
-            background-color: #121212;
-            color: white;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            overflow: hidden;
-        }
-        h1 { color: #00dfa2; font-size: 28px; margin-bottom: 15px; }
-        .main-layout { display: flex; gap: 30px; height: 85vh; }
-        .left-panel { width: 35%; display: flex; flex-direction: column; gap: 20px; }
+        body { background-color: #121212; color: white; font-family: Arial, sans-serif; margin: 0; padding: 20px; overflow: hidden; }
+        h1 { color: #00dfa2; font-size: 26px; margin-bottom: 15px; }
+        .main-layout { display: flex; gap: 25px; height: 85vh; }
+        .left-panel { width: 38%; display: flex; flex-direction: column; gap: 15px; }
         
-        .section {
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid #333;
-        }
-        .section h2 { font-size: 18px; margin-top: 0; color: #00dfa2; }
+        /* Navigacija in pot */
+        .path-bar { font-size: 14px; color: #aaa; background: #222; padding: 8px; border-radius: 4px; word-break: break-all; }
         
-        /* Skriti privzeti gumbi za datoteke in lepe nove tipke */
-        input[type="file"] { display: none; }
+        /* Seznam datotek in map */
+        .file-list { display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; background: #1e1e1e; padding: 10px; border-radius: 6px; border: 1px solid #333; }
+        .item { background-color: #2a2a2a; padding: 12px; border-radius: 6px; font-size: 16px; border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .item.active { background-color: #00dfa2; color: black; border-color: white; }
+        .item.folder { border-left: 5px solid #ffc107; } /* Mape imajo rumen rob */
+        .item.file { border-left: 5px solid #00dfa2; }   /* Video datoteke imajo zelen rob */
         
-        .btn {
-            display: inline-block;
-            background-color: #00dfa2;
-            color: black;
-            border: none;
-            padding: 12px 20px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-bottom: 10px;
-            width: 85%;
-            text-align: center;
-            font-size: 16px;
-        }
-        .btn-secondary { background-color: #444; color: white; }
-        .file-status { font-size: 14px; color: #aaa; margin-bottom: 15px; }
-
-        /* Predvajalnik desno */
-        .right-panel { width: 65%; background: black; border-radius: 8px; position: relative; }
+        .right-panel { width: 62%; background: black; border-radius: 8px; position: relative; display: flex; justify-content: center; align-items: center; }
         video { width: 100%; height: 100%; object-fit: contain; }
         
-        /* Izgled podnapisov na zaslonu */
-        ::cue {
-            background: rgba(0, 0, 0, 0.8);
-            color: #ffffff;
-            font-size: 24px;
-            font-weight: bold;
-        }
+        input { width: 88%; padding: 10px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; margin-bottom: 8px; font-size: 16px; }
+        .btn { background-color: #00dfa2; color: black; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <h1>🎬 Lokalni TV Predvajalnik & Podnapisi</h1>
+    <h1>🖥️ Brskalnik po mapah računalnika (HFS Player)</h1>
     
     <div class="main-layout">
-        <!-- LEVI PANEL: Nalaganje datotek -->
+        <!-- LEVI PANEL: Kontrole in Raziskovalec -->
         <div class="left-panel">
-            
-            <!-- Izbira videa -->
-            <div class="section">
-                <h2>1. Korak: Izbira Videa</h2>
-                <label class="btn" for="videoInput">Izberi Video Datoteko</label>
-                <input type="file" id="videoInput" accept="video/*">
-                <div class="file-status" id="videoStatus">Noben video ni izbran (Podpira MP4, WebM...)</div>
+            <div style="background: #1e1e1e; padding: 15px; border-radius: 6px;">
+                <label style="font-size: 14px; display:block; margin-bottom: 5px;">IP naslov iz HFS programa na PC-ju:</label>
+                <input type="text" id="pcIp" value="http://192.168.1.100:8080" placeholder="http://1.xx">
+                <button class="btn" onclick="poveziInNalozi('/')">Poveži in brskaj</button>
             </div>
 
-            <!-- Izbira podnapisov -->
-            <div class="section">
-                <h2>2. Korak: Izbira Podnapisov</h2>
-                <label class="btn btn-secondary" for="subInput">Izberi Podnapis (.srt ali .vtt)</label>
-                <input type="file" id="subInput" accept=".srt,.vtt">
-                <div class="file-status" id="subStatus">Noben podnapis ni izbran</div>
-            </div>
+            <!-- Trenutna pot v računalniku -->
+            <div class="path-bar" id="currentPath">Trenutna mapa: /</div>
 
-            <!-- Iskanje na podnapisi.org -->
-            <div class="section">
-                <h2>Iskanje na spletu</h2>
-                <button class="btn btn-secondary" onclick="window.open('https://slo-podnapisi.net', '_blank')">Odpri Podnapisi.org</button>
+            <!-- Seznam map in datotek -->
+            <div class="file-list" id="explorerList">
+                <div class="item">Vpišite IP računalnika in kliknite gumb...</div>
             </div>
         </div>
 
         <!-- DESNI PANEL: Video predvajalnik -->
         <div class="right-panel">
-            <video id="tvPlayer" controls>
-                <track id="playerTrack" kind="subtitles" srclang="sl" label="Slovenščina" default>
+            <video id="tvPlayer" controls autoplay>
                 Vaš brskalnik ne podpira predvajalnika.
             </video>
         </div>
     </div>
 
     <script>
-        const videoInput = document.getElementById('videoInput');
-        const subInput = document.getElementById('subInput');
         const player = document.getElementById('tvPlayer');
-        const track = document.getElementById('playerTrack');
-        
-        const videoStatus = document.getElementById('videoStatus');
-        const subStatus = document.getElementById('subStatus');
+        const explorerList = document.getElementById('explorerList');
+        const currentPathTxt = document.getElementById('currentPath');
+        let trenutnaPot = '/';
 
-        // 1. Nalaganje in predvajanje lokalnega videa
-        videoInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                videoStatus.innerText = "Izbrano: " + file.name;
-                const fileURL = URL.createObjectURL(file);
-                player.src = fileURL;
-                player.play();
-            }
-        });
-
-        // 2. Nalaganje podnapisov (z avtomatsko pretvorbo iz SRT v VTT)
-        subInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (!file) return;
+        function poveziInNalozi(pot) {
+            let ip = document.getElementById('pcIp').value;
+            // Odstranimo morebitno poševnico na koncu IP-ja, da ne bo dvojnih poševnic
+            if (ip.endsWith('/')) ip = ip.slice(0, -1); 
             
-            subStatus.innerText = "Izbrano: " + file.name;
-            const reader = new FileReader();
+            trenutnaPot = pot;
+            currentPathTxt.innerText = "Trenutna mapa: " + trenutnaPot;
+            explorerList.innerHTML = "<div class='item'>Nalaganje podatkov...</div>";
 
-            reader.onload = function(e) {
-                let text = e.target.result;
+            // HFS 3 uporablja API klic za seznam datotek v določeni mapi
+            const apiUral = ip + '/~api/v1/files' + trenutnaPot;
 
-                // Če je datoteka .srt, jo pretvorimo v .vtt format, ki ga brskalnik zahteva
-                if (file.name.endsWith('.srt')) {
-                    text = "WEBVTT\n\n" + text
-                        .replace(/,/g, '.') // SRT uporablja vejice, VTT piko za milisekunde
-                        .replace(/(\d\d:\d\d:\d\d\.\d\d\d) --> (\d\d:\d\d:\d\d\.\d\d\d)/g, '$1 --> $2');
-                }
+            fetch(apiUral)
+                .then(response => response.json())
+                .then(data => {
+                    explorerList.innerHTML = "";
 
-                // Ustvarimo začasno povezavo do predelanega podnapisa
-                const vttBlob = new Blob([text], { type: 'text/vtt' });
-                track.src = URL.createObjectURL(vttBlob);
-                alert("Podnapis je pripravljen in naložen!");
-            };
+                    // 1. Gumb za vrnitev nazaj (če nismo v korenski mapi)
+                    if (trenutnaPot !== '/') {
+                        const nazajItem = document.createElement('div');
+                        nazajItem.className = 'item folder';
+                        nazajItem.innerHTML = "📁 <b>.. (Nazaj v prejšnjo mapo)</b>";
+                        nazajItem.addEventListener('click', () => {
+                            // Izračunamo prejšnjo mapo
+                            const deli = trenutnaPot.split('/');
+                            deli.pop(); // odstrani zadnji del
+                            if (deli.length <= 1) deli[0] = '';
+                            const prejsnjaPot = deli.join('/') || '/';
+                            poveziInNalozi(prejsnjaPot);
+                        });
+                        explorerList.appendChild(nazajItem);
+                    }
 
-            reader.readAsText(file);
-        });
+                    if (!data || data.length === 0) {
+                        explorerList.innerHTML += "<div class='item'>Ta mapa je prazna.</div>";
+                        return;
+                    }
 
-        // Tipka 'Enter' na daljincu raztegne video čez cel zaslon
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && player.src) {
-                if (player.requestFullscreen) {
-                    player.requestFullscreen();
-                }
-            }
-        });
+                    // 2. Izpis map in datotek
+                    data.forEach((element) => {
+                        const item = document.createElement('div');
+                        
+                        if (element.type === 'folder') {
+                            // Če je element MAPA
+                            item.className = 'item folder';
+                            item.innerHTML = "📁 " + element.name;
+                            item.addEventListener('click', () => {
+                                // Ko kliknemo mapo, naložimo njeno vsebino
+                                const novaPot = trenutnaPot === '/' ? '/' + element.name : trenutnaPot + '/' + element.name;
+                                poveziInNalozi(novaPot);
+                            });
+                        } else if (element.type === 'file' && (element.name.endsWith('.mp4') || element.name.endsWith('.webm'))) {
+                            // Če je element podprta VIDEO datoteka
+                            item.className = 'item file';
+                            item.innerHTML = "🎬 " + element.name;
+                            
+                            const celotnaPotDoVidea = ip + element.path;
+                            item.addEventListener('click', () => {
+                                document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
+                                item.classList.add('active');
+                                player.src = celotnaPotDoVidea;
+                                player.play();
+                            });
+                        } else {
+                            // Ignoriramo druge datoteke (npr. slike, dokumente), ki niso video
+                            return;
+                        }
+
+                        explorerList.appendChild(item);
+                    });
+                })
+                .catch(err => {
+                    explorerList.innerHTML = "<div class='item' style='color:red;'>Napaka! Preverite IP naslov ali če program HFS na računalniku sploh teče.</div>";
+                    console.error(err);
+                });
+        }
     </script>
 </body>
 </html>
