@@ -52,24 +52,24 @@
     <h1>🎬 Moj TV Predvajalnik</h1>
     
     <div class="box">
-        <p style="font-size: 18px; color: #eee; margin-top: 0;">Aplikacija je nastavljena na vašo mapo s filmi na računalniku.</p>
+        <p style="font-size: 18px; color: #eee; margin-top: 0;">Aplikacija je nastavljena na vašo mapo s filmi na novem naslovu.</p>
         
-        <!-- Velik gumb, ki je takoj pripravljen za klik z daljincem -->
+        <!-- Gumb za takojšen klik z daljincem -->
         <button class="btn" id="startBtn" onclick="odpriBrskalnik()">Odpri mapo s filmi</button>
         
         <p><b>Navodilo:</b> Gumb je že samodejno izbran. Na daljinskem upravljalniku samo pritisnite tipko <b>OK</b>.</p>
-        <div class="status">Pred klikom preverite, da program HFS na računalniku teče.</div>
+        <div class="status">Pred klikom preverite, da program HFS na računalniku trenutno teče!</div>
     </div>
 
     <script>
-        // Samodejno postavi izbiro (fokus) na gumb takoj, ko se stran naloži na televizorju
+        // Samodejno postavi izbiro (fokus) na gumb takoj, ko se stran naloži
         window.onload = function() {
             document.getElementById('startBtn').focus();
         };
 
         function odpriBrskalnik() {
-            // Naslov je sedaj trajno in varno zapisan neposredno v programskem ukazu
-            window.location.href = "http://192.168.1";
+            // Vstavljen vaš novi točen naslov brez vrat 8080
+            window.location.href = "http://192.168.1.107/FILMI";
         }
     </script>
 </body>
