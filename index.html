@@ -24,37 +24,27 @@
             max-width: 550px;
             width: 100%;
         }
-        input { 
-            width: 90%; 
-            padding: 15px; 
-            background: #333; 
-            border: 1px solid #555; 
-            color: #00dfa2; 
-            border-radius: 6px; 
-            margin-bottom: 25px; 
-            font-size: 20px; 
-            text-align: center;
-            font-weight: bold;
-        }
         .btn { 
             background-color: #00dfa2; 
             color: black; 
             border: none; 
-            padding: 18px 40px; 
+            padding: 20px 50px; 
             font-weight: bold; 
             border-radius: 6px; 
             cursor: pointer; 
-            font-size: 20px;
+            font-size: 22px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            transition: background 0.2s;
+            margin-top: 20px;
         }
         .btn:focus, .btn:hover { 
             background-color: #ffffff; 
-            box-shadow: 0 0 15px #00dfa2;
+            box-shadow: 0 0 20px #00dfa2;
             transform: scale(1.05);
         }
         p { color: #aaa; font-size: 16px; margin-top: 25px; line-height: 1.5; }
-        .status { color: #ffc107; font-size: 14px; margin-top: 10px; }
+        .status { color: #ffc107; font-size: 14px; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -62,32 +52,24 @@
     <h1>🎬 Moj TV Predvajalnik</h1>
     
     <div class="box">
-        <label style="font-size: 18px; display:block; margin-bottom: 12px; color: #eee;">Povezava do mape na vašem računalniku:</label>
+        <p style="font-size: 18px; color: #eee; margin-top: 0;">Aplikacija je nastavljena na vašo mapo s filmi na računalniku.</p>
         
-        <!-- Vaš točen IP naslov je že samodejno vstavljen spodaj -->
-        <input type="text" id="pcIp" value="http://192.168.1" placeholder="http://192.168.1">
-        <br>
-        
+        <!-- Velik gumb, ki je takoj pripravljen za klik z daljincem -->
         <button class="btn" id="startBtn" onclick="odpriBrskalnik()">Odpri mapo s filmi</button>
         
-        <p><b>Navodilo za daljinec:</b> S smernimi tipkami se pomaknite na zgornji zeleni gumb in pritisnite tipko <b>OK</b>.</p>
-        <div class="status">Preverite, da program HFS na računalniku trenutno teče.</div>
+        <p><b>Navodilo:</b> Gumb je že samodejno izbran. Na daljinskem upravljalniku samo pritisnite tipko <b>OK</b>.</p>
+        <div class="status">Pred klikom preverite, da program HFS na računalniku teče.</div>
     </div>
 
     <script>
-        // Samodejno postavi izbiro (fokus) na gumb, ko se stran naloži na TV
+        // Samodejno postavi izbiro (fokus) na gumb takoj, ko se stran naloži na televizorju
         window.onload = function() {
             document.getElementById('startBtn').focus();
         };
 
         function odpriBrskalnik() {
-            let ip = document.getElementById('pcIp').value.trim();
-            if(ip) {
-                // Preusmeritev televizorja neposredno v vašo deljeno mapo na računalniku
-                window.location.href = ip;
-            } else {
-                alert("Prosimo, vnesite veljaven naslov.");
-            }
+            // Naslov je sedaj trajno in varno zapisan neposredno v programskem ukazu
+            window.location.href = "http://192.168.1";
         }
     </script>
 </body>
