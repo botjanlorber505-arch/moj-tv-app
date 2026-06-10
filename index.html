@@ -3,129 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moj TV Raziskovalec v3</title>
+    <title>Moj TV Povezovalec</title>
     <style>
-        body { background-color: #121212; color: white; font-family: Arial, sans-serif; margin: 0; padding: 20px; overflow: hidden; }
-        h1 { color: #00dfa2; font-size: 26px; margin-bottom: 15px; }
-        .main-layout { display: flex; gap: 25px; height: 85vh; }
-        .left-panel { width: 38%; display: flex; flex-direction: column; gap: 15px; }
-        
-        .path-bar { font-size: 14px; color: #aaa; background: #222; padding: 8px; border-radius: 4px; }
-        .file-list { display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; background: #1e1e1e; padding: 10px; border-radius: 6px; border: 1px solid #333; }
-        .item { background-color: #2a2a2a; padding: 12px; border-radius: 6px; font-size: 16px; border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .item.active { background-color: #00dfa2; color: black; border-color: white; }
-        .item.folder { border-left: 5px solid #ffc107; }
-        .item.file { border-left: 5px solid #00dfa2; }
-        
-        .right-panel { width: 62%; background: black; border-radius: 8px; position: relative; display: flex; justify-content: center; align-items: center; }
-        video { width: 100%; height: 100%; object-fit: contain; }
-        
-        input { width: 88%; padding: 10px; background: #333; border: 1px solid #555; color: white; border-radius: 4px; margin-bottom: 8px; font-size: 16px; }
-        .btn { background-color: #00dfa2; color: black; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        body { 
+            background-color: #121212; 
+            color: white; 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 50px; 
+        }
+        h1 { color: #00dfa2; font-size: 32px; margin-bottom: 30px; }
+        .box {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 2px solid #333;
+            max-width: 500px;
+            width: 100%;
+        }
+        input { 
+            width: 90%; 
+            padding: 15px; 
+            background: #333; 
+            border: 1px solid #555; 
+            color: white; 
+            border-radius: 6px; 
+            margin-bottom: 20px; 
+            font-size: 18px; 
+            text-align: center;
+        }
+        .btn { 
+            background-color: #00dfa2; 
+            color: black; 
+            border: none; 
+            padding: 15px 30px; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 18px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: #00b382; }
+        p { color: #aaa; font-size: 14px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <h1>🖥️ Brskalnik po mapah računalnika (HFS v3)</h1>
+    <h1>🎬 Moj TV Predvajalnik</h1>
     
-    <div class="main-layout">
-        <div class="left-panel">
-            <div style="background: #1e1e1e; padding: 15px; border-radius: 6px;">
-                <label style="font-size: 14px; display:block; margin-bottom: 5px;">IP naslov iz HFS programa na PC-ju:</label>
-                <input type="text" id="pcIp" value="http://192.168.1.100:8080" placeholder="http://1.xx">
-                <button class="btn" onclick="poveziInNalozi('/')">Poveži in brskaj</button>
-            </div>
-
-            <div class="path-bar" id="currentPath">Trenutna mapa: /</div>
-            <div class="file-list" id="explorerList">
-                <div class="item">Vpišite IP računalnika in kliknite gumb...</div>
-            </div>
-        </div>
-
-        <div class="right-panel">
-            <video id="tvPlayer" controls autoplay>
-                Vaš brskalnik ne poroča o podpori predvajalnika.
-            </video>
-        </div>
+    <div class="box">
+        <label style="font-size: 18px; display:block; margin-bottom: 10px;">Vpišite naslov iz HFS programa na računalniku:</label>
+        <!-- Vpišite vaš privzeti IP spodaj, da vam ga ne bo treba vsakič tipkati -->
+        <input type="text" id="pcIp" value="http://192.168.1.100:8080" placeholder="http://1.xx">
+        <br>
+        <button class="btn" onclick="odpriBrskalnik()">Odpri mapi in predvajaj</button>
+        
+        <p>Prepričajte se, da sta televizor in računalnik povezana na isti Wi-Fi.</p>
     </div>
 
     <script>
-        const player = document.getElementById('tvPlayer');
-        const explorerList = document.getElementById('explorerList');
-        const currentPathTxt = document.getElementById('currentPath');
-        let trenutnaPot = '/';
-
-        function poveziInNalozi(pot) {
+        function odpriBrskalnik() {
             let ip = document.getElementById('pcIp').value.trim();
-            if (ip.endsWith('/')) ip = ip.slice(0, -1); 
-            
-            trenutnaPot = pot;
-            currentPathTxt.innerText = "Trenutna mapa: " + trenutnaPot;
-            explorerList.innerHTML = "<div class='item'>Nalaganje podatkov...</div>";
-
-            // UPORABA NOVEGA HFS 3 URL NASLOVA ZA PRIDOBIVANJE LISTE DATOTEK
-            const apiUrli = `${ip}/~/api/get_file_list?uri=${encodeURIComponent(trenutnaPot)}`;
-
-            fetch(apiUrli)
-                .then(response => response.json())
-                .then(data => {
-                    explorerList.innerHTML = "";
-
-                    // Gumb za nazaj
-                    if (trenutnaPot !== '/') {
-                        const nazajItem = document.createElement('div');
-                        nazajItem.className = 'item folder';
-                        nazajItem.innerHTML = "📁 <b>.. (Nazaj)</b>";
-                        nazajItem.addEventListener('click', () => {
-                            const deli = trenutnaPot.split('/').filter(Boolean);
-                            deli.pop();
-                            const prejsnjaPot = deli.length === 0 ? '/' : '/' + deli.join('/');
-                            poveziInNalozi(prejsnjaPot);
-                        });
-                        explorerList.appendChild(nazajItem);
-                    }
-
-                    // HFS v3 vrne datoteke v obliki { result: [ { name, is_dir, uri } ] } ali direktni seznam
-                    const lista = data.result || data;
-
-                    if (!lista || lista.length === 0) {
-                        explorerList.innerHTML += "<div class='item'>Ta mapa je prazna.</div>";
-                        return;
-                    }
-
-                    lista.forEach((element) => {
-                        const item = document.createElement('div');
-                        const isFolder = element.is_dir || element.type === 'folder';
-                        const nujnoIme = element.name;
-                        const nujnaPot = element.uri || element.path;
-
-                        if (isFolder) {
-                            item.className = 'item folder';
-                            item.innerHTML = "📁 " + nujnoIme;
-                            item.addEventListener('click', () => {
-                                poveziInNalozi(nujnaPot);
-                            });
-                            explorerList.appendChild(item);
-                        } else if (nujnoIme.endsWith('.mp4') || nujnoIme.endsWith('.webm') || nujnoIme.endsWith('.mkv')) {
-                            item.className = 'item file';
-                            item.innerHTML = "🎬 " + nujnoIme;
-                            
-                            // Pot do datoteke za predvajanje
-                            const celotnaPotDoVidea = ip + nujnaPot;
-                            item.addEventListener('click', () => {
-                                document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
-                                item.classList.add('active');
-                                player.src = celotnaPotDoVidea;
-                                player.play();
-                            });
-                            explorerList.appendChild(item);
-                        }
-                    });
-                })
-                .catch(err => {
-                    explorerList.innerHTML = "<div class='item' style='color:red;'>Napaka pri povezavi! Preberite navodila za CORS spodaj.</div>";
-                    console.error(err);
-                });
+            if(ip) {
+                // Koda vas bo takoj preusmerila na vgrajeno spletno stran vašega računalnika
+                window.location.href = ip;
+            } else {
+                alert("Prosimo, vnesite IP naslov.");
+            }
         }
     </script>
 </body>
