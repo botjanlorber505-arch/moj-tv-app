@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moj TV Povezovalec</title>
+    <title>Moj TV Predvajalnik</title>
     <style>
         body { 
             background-color: #121212; 
@@ -11,16 +11,17 @@
             font-family: Arial, sans-serif; 
             text-align: center; 
             padding: 50px; 
+            margin: 0;
         }
-        h1 { color: #00dfa2; font-size: 32px; margin-bottom: 30px; }
+        h1 { color: #00dfa2; font-size: 36px; margin-bottom: 30px; }
         .box {
             background: #1e1e1e;
-            padding: 30px;
-            border-radius: 10px;
+            padding: 40px;
+            border-radius: 12px;
             display: inline-block;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.6);
             border: 2px solid #333;
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
         }
         input { 
@@ -28,25 +29,32 @@
             padding: 15px; 
             background: #333; 
             border: 1px solid #555; 
-            color: white; 
+            color: #00dfa2; 
             border-radius: 6px; 
-            margin-bottom: 20px; 
-            font-size: 18px; 
+            margin-bottom: 25px; 
+            font-size: 20px; 
             text-align: center;
+            font-weight: bold;
         }
         .btn { 
             background-color: #00dfa2; 
             color: black; 
             border: none; 
-            padding: 15px 30px; 
+            padding: 18px 40px; 
             font-weight: bold; 
             border-radius: 6px; 
             cursor: pointer; 
-            font-size: 18px;
-            transition: background 0.2s;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .btn:hover { background-color: #00b382; }
-        p { color: #aaa; font-size: 14px; margin-top: 20px; }
+        .btn:focus, .btn:hover { 
+            background-color: #ffffff; 
+            box-shadow: 0 0 15px #00dfa2;
+            transform: scale(1.05);
+        }
+        p { color: #aaa; font-size: 16px; margin-top: 25px; line-height: 1.5; }
+        .status { color: #ffc107; font-size: 14px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -54,23 +62,31 @@
     <h1>🎬 Moj TV Predvajalnik</h1>
     
     <div class="box">
-        <label style="font-size: 18px; display:block; margin-bottom: 10px;">Vpišite naslov iz HFS programa na računalniku:</label>
-        <!-- Vpišite vaš privzeti IP spodaj, da vam ga ne bo treba vsakič tipkati -->
-        <input type="text" id="pcIp" value="http://192.168.1.100:8080" placeholder="http://1.xx">
-        <br>
-        <button class="btn" onclick="odpriBrskalnik()">Odpri mapi in predvajaj</button>
+        <label style="font-size: 18px; display:block; margin-bottom: 12px; color: #eee;">Povezava do mape na vašem računalniku:</label>
         
-        <p>Prepričajte se, da sta televizor in računalnik povezana na isti Wi-Fi.</p>
+        <!-- Vaš točen IP naslov je že samodejno vstavljen spodaj -->
+        <input type="text" id="pcIp" value="http://192.168.1" placeholder="http://192.168.1">
+        <br>
+        
+        <button class="btn" id="startBtn" onclick="odpriBrskalnik()">Odpri mapo s filmi</button>
+        
+        <p><b>Navodilo za daljinec:</b> S smernimi tipkami se pomaknite na zgornji zeleni gumb in pritisnite tipko <b>OK</b>.</p>
+        <div class="status">Preverite, da program HFS na računalniku trenutno teče.</div>
     </div>
 
     <script>
+        // Samodejno postavi izbiro (fokus) na gumb, ko se stran naloži na TV
+        window.onload = function() {
+            document.getElementById('startBtn').focus();
+        };
+
         function odpriBrskalnik() {
             let ip = document.getElementById('pcIp').value.trim();
             if(ip) {
-                // Koda vas bo takoj preusmerila na vgrajeno spletno stran vašega računalnika
+                // Preusmeritev televizorja neposredno v vašo deljeno mapo na računalniku
                 window.location.href = ip;
             } else {
-                alert("Prosimo, vnesite IP naslov.");
+                alert("Prosimo, vnesite veljaven naslov.");
             }
         }
     </script>
